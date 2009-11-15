@@ -1,0 +1,2 @@
+YSFS{idVendor}=="17e9", SYSFS{bConfigurationValue}=="2", RUN+="/usr/bin/dlconfig /sys%p"
+

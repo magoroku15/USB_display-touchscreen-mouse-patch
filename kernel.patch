@@ -1,0 +1,107 @@
+diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
+index fb7cb9b..366611a 100644
+--- a/drivers/input/touchscreen/usbtouchscreen.c
++++ b/drivers/input/touchscreen/usbtouchscreen.c
+@@ -182,7 +182,7 @@ static struct usb_device_id usbtouch_devices[] = {
+ #endif
+ 
+ #ifdef CONFIG_TOUCHSCREEN_USB_GENERAL_TOUCH
+-	{USB_DEVICE(0x0dfc, 0x0001), .driver_info = DEVTYPE_GENERAL_TOUCH},
++	{USB_DEVICE(0x07dd, 0x0001), .driver_info = DEVTYPE_GENERAL_TOUCH},
+ #endif
+ 
+ #ifdef CONFIG_TOUCHSCREEN_USB_GOTOP
+@@ -536,15 +536,14 @@ static int idealtek_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
+ #endif
+ 
+ /*****************************************************************************
+- * General Touch Part
++ * General Touch Part		hideo
+  */
+ #ifdef CONFIG_TOUCHSCREEN_USB_GENERAL_TOUCH
+ static int general_touch_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
+ {
+ 	dev->x = ((pkt[2] & 0x0F) << 8) | pkt[1] ;
+ 	dev->y = ((pkt[4] & 0x0F) << 8) | pkt[3] ;
+-	dev->press = pkt[5] & 0xff;
+-	dev->touch = pkt[0] & 0x01;
++	dev->touch = (pkt[0] & 0x01) ? 1 : 0;
+ 
+ 	return 1;
+ }
+@@ -683,11 +682,11 @@ static struct usbtouch_device_info usbtouch_dev_info[] = {
+ 
+ #ifdef CONFIG_TOUCHSCREEN_USB_GENERAL_TOUCH
+ 	[DEVTYPE_GENERAL_TOUCH] = {
+-		.min_xc		= 0x0,
+-		.max_xc		= 0x0500,
+-		.min_yc		= 0x0,
+-		.max_yc		= 0x0500,
+-		.rept_size	= 7,
++		.min_xc		= 0x0100,
++		.max_xc		= 0x0f00,
++		.min_yc		= 0x0100,
++		.max_yc		= 0x0f00,
++		.rept_size	= 1,
+ 		.read_data	= general_touch_read_data,
+ 	},
+ #endif
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8b3752b..289878f 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2133,6 +2133,7 @@ config FB_MX3
+ 
+ source "drivers/video/omap/Kconfig"
+ source "drivers/video/omap2/Kconfig"
++source "drivers/video/displaylink/Kconfig"
+ 
+ source "drivers/video/backlight/Kconfig"
+ source "drivers/video/display/Kconfig"
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 1db8dd4..dd0bdf4 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -124,6 +124,7 @@ obj-$(CONFIG_OMAP2_DSS)           += omap2/
+ obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
+ obj-$(CONFIG_FB_CARMINE)          += carminefb.o
+ obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
++obj-$(CONFIG_FB_DISPLAYLINK)	  += displaylink/
+ 
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+diff --git a/drivers/video/displaylink/displaylink-fb.c b/drivers/video/displaylink/displaylink-fb.c
+index 0b9b02b..7b6da81 100644
+--- a/drivers/video/displaylink/displaylink-fb.c
++++ b/drivers/video/displaylink/displaylink-fb.c
+@@ -371,7 +371,7 @@ static struct fb_ops displaylink_fb_ops = {
+ 	.fb_release = displaylink_fb_release,
+ 	.fb_blank = displaylink_fb_blank,
+ 	.fb_check_var = displaylink_fb_checkvar,
+-	.fb_set_par = displaylink_fb_setpar,
++	//.fb_set_par = displaylink_fb_setpar,
+ 	.fb_pan_display = displaylink_pan_display,	
+ };
+ 
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index cfd9dce..ad53ed5 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -845,7 +845,7 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+ 	struct fb_fix_screeninfo *fix = &info->fix;
+ 	unsigned int yres = info->var.yres;
+ 	int err = 0;
+-
++/*
+ 	if (var->yoffset > 0) {
+ 		if (var->vmode & FB_VMODE_YWRAP) {
+ 			if (!fix->ywrapstep || (var->yoffset % fix->ywrapstep))
+@@ -864,7 +864,7 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+ 	    var->yoffset + yres > info->var.yres_virtual ||
+ 	    var->xoffset + info->var.xres > info->var.xres_virtual)
+ 		return -EINVAL;
+-
++*/
+ 	if ((err = info->fbops->fb_pan_display(var, info)))
+ 		return err;
+         info->var.xoffset = var->xoffset;
