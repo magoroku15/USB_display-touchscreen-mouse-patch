@@ -42,7 +42,7 @@ index fb7cb9b..366611a 100644
 +		.max_xc		= 0x0f00,
 +		.min_yc		= 0x0100,
 +		.max_yc		= 0x0f00,
-+		.rept_size	= 1,
++		.rept_size	= 5,
  		.read_data	= general_touch_read_data,
  	},
  #endif
